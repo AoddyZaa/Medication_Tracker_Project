@@ -21,16 +21,18 @@ SCOPES = [
     "https://www.googleapis.com/auth/drive"
 ]
 
-# กำหนดวันเริ่มต้นใหม่ตามที่เจ้านายต้องการ (26 ตุลาคม 2569 / 2026-10-26)
 default_visit_date = "2026-10-26"
 default_appt_date = "2026-11-25" # นัดรอบถัดไป (30 วัน)
 
 DEFAULT_MEDICATIONS = [
-    {"แพทย์ผู้สั่งจ่าย": "หมอจุมพล", "ชื่อยา": "Less-K 5 g", "จำนวนต่อครั้ง": 1, "จำนวนครั้งต่อวัน": 2, "ยาคงเหลือเดิม": 0, "วันที่พบแพทย์ล่าสุด": default_visit_date, "วันที่นัดถัดไป": default_appt_date, "จำนวนที่ได้รับจริง": 0},
-    {"แพทย์ผู้สั่งจ่าย": "หมอจุมพล", "ชื่อยา": "Furosemide 40 mg", "จำนวนต่อครั้ง": 2, "จำนวนครั้งต่อวัน": 1, "ยาคงเหลือเดิม": 0, "วันที่พบแพทย์ล่าสุด": default_visit_date, "วันที่นัดถัดไป": default_appt_date, "จำนวนที่ได้รับจริง": 0},
-    {"แพทย์ผู้สั่งจ่าย": "หมอจุมพล", "ชื่อยา": "Sodamint 300 mg", "จำนวนต่อครั้ง": 1, "จำนวนครั้งต่อวัน": 3, "ยาคงเหลือเดิม": 0, "วันที่พบแพทย์ล่าสุด": default_visit_date, "วันที่นัดถัดไป": default_appt_date, "จำนวนที่ได้รับจริง": 0},
-    {"แพทย์ผู้สั่งจ่าย": "หมอจุมพล", "ชื่อยา": "Amlodipine 5 mg", "จำนวนต่อครั้ง": 1, "จำนวนครั้งต่อวัน": 2, "ยาคงเหลือเดิม": 0, "วันที่พบแพทย์ล่าสุด": default_visit_date, "วันที่นัดถัดไป": default_appt_date, "จำนวนที่ได้รับจริง": 0},
-    {"แพทย์ผู้สั่งจ่าย": "คุณหมอกิตติคุณ", "ชื่อยา": "Vit B. Complex", "จำนวนต่อครั้ง": 1, "จำนวนครั้งต่อวัน": 2, "ยาคงเหลือเดิม": 0, "วันที่พบแพทย์ล่าสุด": default_visit_date, "วันที่นัดถัดไป": default_appt_date, "จำนวนที่ได้รับจริง": 0},
+    {"แพทย์ผู้สั่งจ่าย": "หมอจุมพล", "ชื่อยา": "Less-K 5 g", "จำนวนต่อครั้ง": 1.0, "จำนวนครั้งต่อวัน": 2, "ยาคงเหลือเดิม": 0, "วันที่พบแพทย์ล่าสุด": default_visit_date, "วันที่นัดถัดไป": default_appt_date, "จำนวนที่ได้รับจริง": 0},
+    {"แพทย์ผู้สั่งจ่าย": "หมอจุมพล", "ชื่อยา": "Furosemide 40 mg", "จำนวนต่อครั้ง": 2.0, "จำนวนครั้งต่อวัน": 1, "ยาคงเหลือเดิม": 0, "วันที่พบแพทย์ล่าสุด": default_visit_date, "วันที่นัดถัดไป": default_appt_date, "จำนวนที่ได้รับจริง": 0},
+    {"แพทย์ผู้สั่งจ่าย": "หมอจุมพล", "ชื่อยา": "Sodamint 300 mg", "จำนวนต่อครั้ง": 1.0, "จำนวนครั้งต่อวัน": 3, "ยาคงเหลือเดิม": 0, "วันที่พบแพทย์ล่าสุด": default_visit_date, "วันที่นัดถัดไป": default_appt_date, "จำนวนที่ได้รับจริง": 0},
+    {"แพทย์ผู้สั่งจ่าย": "หมอจุมพล", "ชื่อยา": "Amlodipine 5 mg", "จำนวนต่อครั้ง": 1.0, "จำนวนครั้งต่อวัน": 2, "ยาคงเหลือเดิม": 0, "วันที่พบแพทย์ล่าสุด": default_visit_date, "วันที่นัดถัดไป": default_appt_date, "จำนวนที่ได้รับจริง": 0},
+    {"แพทย์ผู้สั่งจ่าย": "หมอจุมพล", "ชื่อยา": "Simvastatin 20 mg", "จำนวนต่อครั้ง": 0.5, "จำนวนครั้งต่อวัน": 1, "ยาคงเหลือเดิม": 0, "วันที่พบแพทย์ล่าสุด": default_visit_date, "วันที่นัดถัดไป": default_appt_date, "จำนวนที่ได้รับจริง": 0},
+    {"แพทย์ผู้สั่งจ่าย": "หมอจุมพล", "ชื่อยา": "Doxazosin 2 mg", "จำนวนต่อครั้ง": 1.0, "จำนวนครั้งต่อวัน": 1, "ยาคงเหลือเดิม": 0, "วันที่พบแพทย์ล่าสุด": default_visit_date, "วันที่นัดถัดไป": default_appt_date, "จำนวนที่ได้รับจริง": 0},
+    {"แพทย์ผู้สั่งจ่าย": "หมอจุมพล", "ชื่อยา": "Insulin 30/70 (เช้า 28 / เย็น 14 ยูนิต)", "จำนวนต่อครั้ง": 42.0, "จำนวนครั้งต่อวัน": 1, "ยาคงเหลือเดิม": 0, "วันที่พบแพทย์ล่าสุด": default_visit_date, "วันที่นัดถัดไป": default_appt_date, "จำนวนที่ได้รับจริง": 0},
+    {"แพทย์ผู้สั่งจ่าย": "คุณหมอกิตติคุณ", "ชื่อยา": "Vit B. Complex", "จำนวนต่อครั้ง": 1.0, "จำนวนครั้งต่อวัน": 2, "ยาคงเหลือเดิม": 0, "วันที่พบแพทย์ล่าสุด": default_visit_date, "วันที่นัดถัดไป": default_appt_date, "จำนวนที่ได้รับจริง": 0},
 ]
 
 def get_gcp_client():
@@ -73,12 +75,11 @@ if "df_med" not in st.session_state:
 
 df_all = st.session_state["df_med"]
 
-# ตรวจสอบคอลัมน์วันที่ หากยังไม่มีให้เติมค่าเริ่มต้น
 if "วันที่พบแพทย์ล่าสุด" not in df_all.columns:
     df_all["วันที่พบแพทย์ล่าสุด"] = default_visit_date
     st.session_state["df_med"] = df_all
 
-# --- SIDEBAR (ฟอร์มป้อนข้อมูลและเลือกแพทย์ทางด้านซ้าย) ---
+# --- SIDEBAR ---
 with st.sidebar:
     st.header("🩺 เลือกแพทย์ & จัดการยา")
     
@@ -102,10 +103,11 @@ with st.sidebar:
     
     with st.form("add_med_form"):
         med_name = st.text_input("ชื่อยาใหม่", value="")
-        dose_val = st.number_input("จำนวนเม็ด/ซอง ต่อครั้ง", min_value=1, value=1, step=1)
-        times_val = st.number_input("จำนวนครั้งต่อวัน", min_value=1, value=2, step=1)
-        remain_val = st.number_input("ยาคงเหลือเดิม", min_value=0, value=0, step=1)
-        received_val = st.number_input("จำนวนที่ได้รับจริง", min_value=0, value=0, step=1)
+        # ปรับรองรับครึ่งเม็ด (0.5) และยูนิต
+        dose_val = st.number_input("จำนวนต่อครั้ง (เม็ด/ซอง/ยูนิต)", min_value=0.1, value=1.0, step=0.5, format="%.1f")
+        times_val = st.number_input("จำนวนครั้งต่อวัน", min_value=1, value=1, step=1)
+        remain_val = st.number_input("ยาคงเหลือเดิม", min_value=0.0, value=0.0, step=0.5, format="%.1f")
+        received_val = st.number_input("จำนวนที่ได้รับจริง", min_value=0.0, value=0.0, step=0.5, format="%.1f")
 
         submitted = st.form_submit_button("➕ เพิ่มยาเข้าระบบ", use_container_width=True)
         if submitted:
@@ -140,7 +142,7 @@ with st.sidebar:
             use_container_width=True
         )
 
-# --- MAIN LAYOUT (แสดงรายละเอียดทางด้านขวา) ---
+# --- MAIN LAYOUT ---
 st.title("💊 ระบบติดตามการจัดยาและวันนัดแพทย์ 2026 ❤️")
 st.markdown("---")
 
@@ -150,9 +152,12 @@ editor_df = st.session_state["df_med"].copy()
 if filter_doc != "แสดงทั้งหมด":
     editor_df = editor_df[editor_df["แพทย์ผู้สั่งจ่าย"] == filter_doc]
 
-for col in ["จำนวนต่อครั้ง", "จำนวนครั้งต่อวัน", "ยาคงเหลือเดิม", "จำนวนที่ได้รับจริง"]:
+for col in ["จำนวนต่อครั้ง", "ยาคงเหลือเดิม", "จำนวนที่ได้รับจริง"]:
     if col in editor_df.columns:
-        editor_df[col] = pd.to_numeric(editor_df[col], errors='coerce').fillna(0).astype(int)
+        editor_df[col] = pd.to_numeric(editor_df[col], errors='coerce').fillna(0.0)
+
+if "จำนวนครั้งต่อวัน" in editor_df.columns:
+    editor_df["จำนวนครั้งต่อวัน"] = pd.to_numeric(editor_df["จำนวนครั้งต่อวัน"], errors='coerce').fillna(1).astype(int)
 
 st.subheader(f"📋 ตารางรายการยา (แพทย์: {filter_doc}) — สามารถแก้ไขหรือลบแถวเพื่องดยาได้โดยตรง")
 
@@ -178,17 +183,17 @@ if not edited_df.empty:
         doctor = str(row.get("แพทย์ผู้สั่งจ่าย", ""))
         med_name = str(row.get("ชื่อยา", ""))
         try:
-            dose = int(row.get("จำนวนต่อครั้ง", 0))
+            dose = float(row.get("จำนวนต่อครั้ง", 0))
         except Exception:
-            dose = 0
+            dose = 0.0
         try:
             times = int(row.get("จำนวนครั้งต่อวัน", 0))
         except Exception:
             times = 0
         try:
-            remaining = int(row.get("ยาคงเหลือเดิม", 0))
+            remaining = float(row.get("ยาคงเหลือเดิม", 0))
         except Exception:
-            remaining = 0
+            remaining = 0.0
         
         visit_str = str(row.get("วันที่พบแพทย์ล่าสุด", default_visit_date))
         appt_str = str(row.get("วันที่นัดถัดไป", default_appt_date))
@@ -203,20 +208,20 @@ if not edited_df.empty:
             days_interval = 30
 
         try:
-            received = int(row.get("จำนวนที่ได้รับจริง", 0))
+            received = float(row.get("จำนวนที่ได้รับจริง", 0))
         except Exception:
-            received = 0
+            received = 0.0
 
-        total_needed = dose * times * days_interval
-        net_needed = max(0, total_needed - remaining)
+        total_needed = round(dose * times * days_interval, 1)
+        net_needed = max(0.0, round(total_needed - remaining, 1))
 
         if received == 0:
             status = "รอเช็คยา ⏳"
         elif received >= net_needed:
             status = "ครบถ้วน ✅"
         else:
-            diff = net_needed - received
-            status = f"ขาด {diff} หน่วย ⚠️"
+            diff = round(net_needed - received, 1)
+            status = f"ขาด {diff} หน่วย/เม็ด ⚠️"
 
         summary_rows.append({
             "แพทย์ผู้สั่งจ่าย": doctor,
@@ -224,10 +229,10 @@ if not edited_df.empty:
             "วันที่พบแพทย์": visit_str,
             "วันที่นัดถัดไป": appt_str,
             "จำนวนวันนัด": f"{days_interval} วัน",
-            "รวมยาที่ต้องใช้": f"{total_needed} หน่วย",
-            "ยาคงเหลือเดิม": f"{remaining} หน่วย",
-            "ยาที่ต้องขอเพิ่มรอบนี้": f"{net_needed} หน่วย",
-            "ได้รับจริง": f"{received} หน่วย",
+            "รวมยาที่ต้องใช้": f"{total_needed} หน่วย/เม็ด",
+            "ยาคงเหลือเดิม": f"{remaining} หน่วย/เม็ด",
+            "ยาที่ต้องขอเพิ่มรอบนี้": f"{net_needed} หน่วย/เม็ด",
+            "ได้รับจริง": f"{received} หน่วย/เม็ด",
             "สถานะเช็คยา": status
         })
 
