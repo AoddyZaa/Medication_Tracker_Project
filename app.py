@@ -69,7 +69,6 @@ def get_sheet_data():
 
 sheet, records = get_sheet_data()
 
-# ใช้ st.session_state เก็บ dataframe
 if "df_med" not in st.session_state:
     st.session_state["df_med"] = pd.DataFrame(records if records else DEFAULT_MEDICATIONS)
 
@@ -103,8 +102,7 @@ with st.sidebar:
     
     with st.form("add_med_form"):
         med_name = st.text_input("ชื่อยาใหม่", value="")
-        # ปรับรองรับครึ่งเม็ด (0.5) และยูนิต
-        dose_val = st.number_input("จำนวนต่อครั้ง (เม็ด/ซอง/ยูนิต)", min_value=0.1, value=1.0, step=0.5, format="%.1f")
+        dose_val = st.number_input("จำนวนต่อครั้ง", min_value=0.1, value=1.0, step=0.5, format="%.1f")
         times_val = st.number_input("จำนวนครั้งต่อวัน", min_value=1, value=1, step=1)
         remain_val = st.number_input("ยาคงเหลือเดิม", min_value=0.0, value=0.0, step=0.5, format="%.1f")
         received_val = st.number_input("จำนวนที่ได้รับจริง", min_value=0.0, value=0.0, step=0.5, format="%.1f")
@@ -182,6 +180,10 @@ if not edited_df.empty:
     for _, row in edited_df.iterrows():
         doctor = str(row.get("แพทย์ผู้สั่งจ่าย", ""))
         med_name = str(row.get("ชื่อยา", ""))
+        
+        # กำหนดหน่วยแสดงผลตามชื่อยา (ถ้าเป็นอินซูลินใช้ "ยูนิต", นอกนั้นใช้ "เม็ด")
+        unit_label = "ยูนิต" if "Insulin" in med_name or "อินซูลิน" in med_name else "เม็ด"
+
         try:
             dose = float(row.get("จำนวนต่อครั้ง", 0))
         except Exception:
@@ -221,7 +223,7 @@ if not edited_df.empty:
             status = "ครบถ้วน ✅"
         else:
             diff = round(net_needed - received, 1)
-            status = f"ขาด {diff} หน่วย/เม็ด ⚠️"
+            status = f"ขาด {diff} {unit_label} ⚠️"
 
         summary_rows.append({
             "แพทย์ผู้สั่งจ่าย": doctor,
@@ -229,10 +231,10 @@ if not edited_df.empty:
             "วันที่พบแพทย์": visit_str,
             "วันที่นัดถัดไป": appt_str,
             "จำนวนวันนัด": f"{days_interval} วัน",
-            "รวมยาที่ต้องใช้": f"{total_needed} หน่วย/เม็ด",
-            "ยาคงเหลือเดิม": f"{remaining} หน่วย/เม็ด",
-            "ยาที่ต้องขอเพิ่มรอบนี้": f"{net_needed} หน่วย/เม็ด",
-            "ได้รับจริง": f"{received} หน่วย/เม็ด",
+            "รวมยาที่ต้องใช้": f"{total_needed} {unit_label}",
+            "ยาคงเหลือเดิม": f"{remaining} {unit_label}",
+            "ยาที่ต้องขอเพิ่มรอบนี้": f"{net_needed} {unit_label}",
+            "ได้รับจริง": f"{received} {unit_label}",
             "สถานะเช็คยา": status
         })
 
