@@ -21,8 +21,8 @@ SCOPES = [
     "https://www.googleapis.com/auth/drive"
 ]
 
-default_visit_date = "2026-10-26"
-default_appt_date = "2026-12-07" # กำหนดเริ่มต้นตามที่แจ้งไว้
+default_visit_date = "2026-10-27"
+default_appt_date = "2026-12-07"
 
 DEFAULT_MEDICATIONS = [
     {"แพทย์ผู้สั่งจ่าย": "หมอจุมพล", "ชื่อยา": "Less-K 5 g", "จำนวนต่อครั้ง": 1.0, "จำนวนครั้งต่อวัน": 2, "ยาคงเหลือเดิม": 0, "วันที่พบแพทย์ล่าสุด": default_visit_date, "วันที่นัดถัดไป": default_appt_date, "จำนวนที่ได้รับจริง": 0},
@@ -67,6 +67,23 @@ def get_sheet_data():
     except Exception:
         return None, DEFAULT_MEDICATIONS
 
+# ฟังก์ชันบันทึกข้อมูล DataFrame กลับลง Google Sheets
+def save_to_sheet(df):
+    client = get_gcp_client()
+    if not client:
+        return False
+    try:
+        sh = client.open(SPREADSHEET_NAME)
+        sheet = sh.worksheet(SHEET_NAME)
+        sheet.clear()
+        # แปลงข้อมูลทั้งหมดเป็น String และเตรียมเขียนลง Sheet
+        data_to_write = [df.columns.tolist()] + df.astype(str).values.tolist()
+        sheet.update(data_to_write)
+        return True
+    except Exception as e:
+        print(f"Error saving to sheets: {e}")
+        return False
+
 sheet, records = get_sheet_data()
 
 if "df_med" not in st.session_state:
@@ -97,7 +114,7 @@ with st.sidebar:
     visit_date = st.date_input("วันที่พบแพทย์ล่าสุด", value=datetime.date(2026, 10, 27))
     next_appt_date = st.date_input("วันที่แพทย์นัดครั้งต่อไป", value=datetime.date(2026, 12, 7))
 
-    # --- ปุ่มสำหรับอัปเดตวันนัดและคำนวณจำนวนยาอัตโนมัติ ---
+    # --- ปุ่มอัปเดตวันนัดและคำนวณจำนวนยา (แพทย์ท่านนี้) ---
     if st.button("💾 บันทึก & อัปเดตวันนัดและจำนวนยา (แพทย์ท่านนี้)", use_container_width=True, type="primary"):
         if doc_name and doc_name in df_all["แพทย์ผู้สั่งจ่าย"].values:
             days = (next_appt_date - visit_date).days
@@ -115,14 +132,17 @@ with st.sidebar:
                         return row["จำนวนที่ได้รับจริง"]
                 return row["จำนวนที่ได้รับจริง"]
 
-            # อัปเดต วันที่ และ คำนวณจำนวนที่ได้รับจริง
             st.session_state["df_med"].loc[st.session_state["df_med"]["แพทย์ผู้สั่งจ่าย"] == doc_name, "วันที่พบแพทย์ล่าสุด"] = visit_date.strftime("%Y-%m-%d")
             st.session_state["df_med"].loc[st.session_state["df_med"]["แพทย์ผู้สั่งจ่าย"] == doc_name, "วันที่นัดถัดไป"] = next_appt_date.strftime("%Y-%m-%d")
             st.session_state["df_med"]["จำนวนที่ได้รับจริง"] = st.session_state["df_med"].apply(calc_rec, axis=1)
 
-            st.success(f"🎉 อัปเดตวันนัดและคำนวณยาของ {doc_name} เรียบร้อยแล้ว! ({days} วัน)")
+            # บันทึกลง Google Sheets ทันที
+            save_to_sheet(st.session_state["df_med"])
+
+            st.success(f"🎉 อัปเดตและบันทึกลง Google Sheets ของ {doc_name} เรียบร้อยแล้ว! ({days} วัน)")
             st.rerun()
 
+    # --- ปุ่มอัปเดตวันนัดและจำนวนยาทุกท่าน ---
     if st.button("🔄 อัปเดตวันนัดและจำนวนยาให้แพทย์ทุกท่าน", use_container_width=True):
         days = (next_appt_date - visit_date).days
         days = max(0, days)
@@ -140,7 +160,10 @@ with st.sidebar:
         st.session_state["df_med"]["วันที่นัดถัดไป"] = next_appt_date.strftime("%Y-%m-%d")
         st.session_state["df_med"]["จำนวนที่ได้รับจริง"] = st.session_state["df_med"].apply(calc_all, axis=1)
 
-        st.success(f"🎉 อัปเดตวันนัดและคำนวณยาของแพทย์ทุกท่านเรียบร้อยแล้ว! ({days} วัน)")
+        # บันทึกลง Google Sheets ทันที
+        save_to_sheet(st.session_state["df_med"])
+
+        st.success(f"🎉 อัปเดตและบันทึกลง Google Sheets ของแพทย์ทุกท่านเรียบร้อยแล้ว! ({days} วัน)")
         st.rerun()
 
     st.markdown("---")
@@ -152,7 +175,6 @@ with st.sidebar:
         times_val = st.number_input("จำนวนครั้งต่อวัน", min_value=1, value=1, step=1)
         remain_val = st.number_input("ยาคงเหลือเดิม", min_value=0.0, value=0.0, step=0.5, format="%.1f")
         
-        # คำนวณยอดเริ่มต้นอัตโนมัติ
         calc_days = (next_appt_date - visit_date).days
         default_rec = max(0.0, round((dose_val * times_val * max(0, calc_days)) - remain_val, 1))
         
@@ -174,7 +196,11 @@ with st.sidebar:
                     "จำนวนที่ได้รับจริง": received_val
                 }
                 st.session_state["df_med"] = pd.concat([st.session_state["df_med"], pd.DataFrame([new_item])], ignore_index=True)
-                st.success("🎉 เพิ่มรายการยาสำเร็จ!")
+                
+                # บันทึกลง Google Sheets ทันที
+                save_to_sheet(st.session_state["df_med"])
+
+                st.success("🎉 เพิ่มรายการยาและบันทึกลง Google Sheets สำเร็จ!")
                 st.rerun()
 
     st.markdown("---")
@@ -219,7 +245,11 @@ edited_df = st.data_editor(
 
 if st.button("💾 บันทึกการแก้ไขข้อมูลทั้งหมด", use_container_width=True):
     st.session_state["df_med"] = edited_df
-    st.success("🎉 บันทึกข้อมูลเรียบร้อยแล้ว!")
+    
+    # บันทึกลง Google Sheets ทันที
+    save_to_sheet(st.session_state["df_med"])
+
+    st.success("🎉 บันทึกข้อมูลลง Google Sheets เรียบร้อยแล้ว!")
     st.rerun()
 
 st.markdown("---")
