@@ -22,7 +22,7 @@ SCOPES = [
 ]
 
 default_visit_date = "2026-10-26"
-default_appt_date = "2026-11-25" # นัดรอบถัดไป (30 วัน)
+default_appt_date = "2026-12-07" # กำหนดเริ่มต้นตามที่แจ้งไว้
 
 DEFAULT_MEDICATIONS = [
     {"แพทย์ผู้สั่งจ่าย": "หมอจุมพล", "ชื่อยา": "Less-K 5 g", "จำนวนต่อครั้ง": 1.0, "จำนวนครั้งต่อวัน": 2, "ยาคงเหลือเดิม": 0, "วันที่พบแพทย์ล่าสุด": default_visit_date, "วันที่นัดถัดไป": default_appt_date, "จำนวนที่ได้รับจริง": 0},
@@ -93,9 +93,55 @@ with st.sidebar:
         doc_name = selected_doc_option
 
     st.markdown("---")
-    st.subheader("📅 ข้อมูลวันนัดหมาย")
-    visit_date = st.date_input("วันที่พบแพทย์ล่าสุด", value=datetime.date(2026, 10, 26))
-    next_appt_date = st.date_input("วันที่แพทย์นัดครั้งต่อไป", value=datetime.date(2026, 11, 25))
+    st.subheader("📅 บันทึกวันนัดหมาย & คำนวณยา")
+    visit_date = st.date_input("วันที่พบแพทย์ล่าสุด", value=datetime.date(2026, 10, 27))
+    next_appt_date = st.date_input("วันที่แพทย์นัดครั้งต่อไป", value=datetime.date(2026, 12, 7))
+
+    # --- ปุ่มสำหรับอัปเดตวันนัดและคำนวณจำนวนยาอัตโนมัติ ---
+    if st.button("💾 บันทึก & อัปเดตวันนัดและจำนวนยา (แพทย์ท่านนี้)", use_container_width=True, type="primary"):
+        if doc_name and doc_name in df_all["แพทย์ผู้สั่งจ่าย"].values:
+            days = (next_appt_date - visit_date).days
+            days = max(0, days)
+            
+            def calc_rec(row):
+                if row["แพทย์ผู้สั่งจ่าย"] == doc_name:
+                    try:
+                        dose = float(row["จำนวนต่อครั้ง"])
+                        times = int(row["จำนวนครั้งต่อวัน"])
+                        remain = float(row["ยาคงเหลือเดิม"])
+                        needed = max(0.0, round((dose * times * days) - remain, 1))
+                        return needed
+                    except Exception:
+                        return row["จำนวนที่ได้รับจริง"]
+                return row["จำนวนที่ได้รับจริง"]
+
+            # อัปเดต วันที่ และ คำนวณจำนวนที่ได้รับจริง
+            st.session_state["df_med"].loc[st.session_state["df_med"]["แพทย์ผู้สั่งจ่าย"] == doc_name, "วันที่พบแพทย์ล่าสุด"] = visit_date.strftime("%Y-%m-%d")
+            st.session_state["df_med"].loc[st.session_state["df_med"]["แพทย์ผู้สั่งจ่าย"] == doc_name, "วันที่นัดถัดไป"] = next_appt_date.strftime("%Y-%m-%d")
+            st.session_state["df_med"]["จำนวนที่ได้รับจริง"] = st.session_state["df_med"].apply(calc_rec, axis=1)
+
+            st.success(f"🎉 อัปเดตวันนัดและคำนวณยาของ {doc_name} เรียบร้อยแล้ว! ({days} วัน)")
+            st.rerun()
+
+    if st.button("🔄 อัปเดตวันนัดและจำนวนยาให้แพทย์ทุกท่าน", use_container_width=True):
+        days = (next_appt_date - visit_date).days
+        days = max(0, days)
+
+        def calc_all(row):
+            try:
+                dose = float(row["จำนวนต่อครั้ง"])
+                times = int(row["จำนวนครั้งต่อวัน"])
+                remain = float(row["ยาคงเหลือเดิม"])
+                return max(0.0, round((dose * times * days) - remain, 1))
+            except Exception:
+                return row["จำนวนที่ได้รับจริง"]
+
+        st.session_state["df_med"]["วันที่พบแพทย์ล่าสุด"] = visit_date.strftime("%Y-%m-%d")
+        st.session_state["df_med"]["วันที่นัดถัดไป"] = next_appt_date.strftime("%Y-%m-%d")
+        st.session_state["df_med"]["จำนวนที่ได้รับจริง"] = st.session_state["df_med"].apply(calc_all, axis=1)
+
+        st.success(f"🎉 อัปเดตวันนัดและคำนวณยาของแพทย์ทุกท่านเรียบร้อยแล้ว! ({days} วัน)")
+        st.rerun()
 
     st.markdown("---")
     st.subheader("💊 เพิ่มยาใหม่ในสังกัดแพทย์นี้")
@@ -105,7 +151,12 @@ with st.sidebar:
         dose_val = st.number_input("จำนวนต่อครั้ง", min_value=0.1, value=1.0, step=0.5, format="%.1f")
         times_val = st.number_input("จำนวนครั้งต่อวัน", min_value=1, value=1, step=1)
         remain_val = st.number_input("ยาคงเหลือเดิม", min_value=0.0, value=0.0, step=0.5, format="%.1f")
-        received_val = st.number_input("จำนวนที่ได้รับจริง", min_value=0.0, value=0.0, step=0.5, format="%.1f")
+        
+        # คำนวณยอดเริ่มต้นอัตโนมัติ
+        calc_days = (next_appt_date - visit_date).days
+        default_rec = max(0.0, round((dose_val * times_val * max(0, calc_days)) - remain_val, 1))
+        
+        received_val = st.number_input("จำนวนที่ได้รับจริง", min_value=0.0, value=default_rec, step=0.5, format="%.1f")
 
         submitted = st.form_submit_button("➕ เพิ่มยาเข้าระบบ", use_container_width=True)
         if submitted:
@@ -181,7 +232,6 @@ if not edited_df.empty:
         doctor = str(row.get("แพทย์ผู้สั่งจ่าย", ""))
         med_name = str(row.get("ชื่อยา", ""))
         
-        # กำหนดหน่วยแสดงผลตามชื่อยา (ถ้าเป็นอินซูลินใช้ "ยูนิต", นอกนั้นใช้ "เม็ด")
         unit_label = "ยูนิต" if "Insulin" in med_name or "อินซูลิน" in med_name else "เม็ด"
 
         try:
@@ -207,7 +257,7 @@ if not edited_df.empty:
             if days_interval < 0:
                 days_interval = 0
         except Exception:
-            days_interval = 30
+            days_interval = 41
 
         try:
             received = float(row.get("จำนวนที่ได้รับจริง", 0))
