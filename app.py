@@ -47,13 +47,33 @@ def get_gcp_client():
     except Exception:
         return None
 
+# ฟังก์ชันดึงข้อมูล หรือสร้างไฟล์ Google Sheets ให้เองอัตโนมัติถ้ายังไม่มี
 def get_sheet_data():
     client = get_gcp_client()
     if not client:
         return None, DEFAULT_MEDICATIONS
     try:
-        sh = client.open(SPREADSHEET_NAME)
-        sheet = sh.worksheet(SHEET_NAME)
+        try:
+            sh = client.open(SPREADSHEET_NAME)
+        except gspread.exceptions.SpreadsheetNotFound:
+            # ถ้ายังไม่มีไฟล์ ให้สร้างขึ้นมาใหม่ทันที
+            sh = client.create(SPREADSHEET_NAME)
+            sheet = sh.get_worksheet(0)
+            sheet.update_title(SHEET_NAME)
+            df_default = pd.DataFrame(DEFAULT_MEDICATIONS)
+            data_to_write = [df_default.columns.tolist()] + df_default.astype(str).values.tolist()
+            sheet.update(data_to_write)
+            return sheet, DEFAULT_MEDICATIONS
+
+        try:
+            sheet = sh.worksheet(SHEET_NAME)
+        except gspread.exceptions.WorksheetNotFound:
+            sheet = sh.add_worksheet(title=SHEET_NAME, rows="100", cols="20")
+            df_default = pd.DataFrame(DEFAULT_MEDICATIONS)
+            data_to_write = [df_default.columns.tolist()] + df_default.astype(str).values.tolist()
+            sheet.update(data_to_write)
+            return sheet, DEFAULT_MEDICATIONS
+
         all_values = sheet.get_all_values()
         records = []
         if len(all_values) > 1:
@@ -63,8 +83,13 @@ def get_sheet_data():
                 records.append(dict(zip(headers, [str(v).strip() for v in padded_row])))
             return sheet, records if records else DEFAULT_MEDICATIONS
         else:
+            # ถ้าชีตว่าง ให้ใส่ข้อมูลเริ่มต้นลงไป
+            df_default = pd.DataFrame(DEFAULT_MEDICATIONS)
+            data_to_write = [df_default.columns.tolist()] + df_default.astype(str).values.tolist()
+            sheet.update(data_to_write)
             return sheet, DEFAULT_MEDICATIONS
-    except Exception:
+    except Exception as e:
+        print(f"Error accessing sheet: {e}")
         return None, DEFAULT_MEDICATIONS
 
 # ฟังก์ชันบันทึกข้อมูล DataFrame กลับลง Google Sheets
@@ -73,10 +98,17 @@ def save_to_sheet(df):
     if not client:
         return False
     try:
-        sh = client.open(SPREADSHEET_NAME)
-        sheet = sh.worksheet(SHEET_NAME)
+        try:
+            sh = client.open(SPREADSHEET_NAME)
+        except gspread.exceptions.SpreadsheetNotFound:
+            sh = client.create(SPREADSHEET_NAME)
+            
+        try:
+            sheet = sh.worksheet(SHEET_NAME)
+        except gspread.exceptions.WorksheetNotFound:
+            sheet = sh.add_worksheet(title=SHEET_NAME, rows="100", cols="20")
+
         sheet.clear()
-        # แปลงข้อมูลทั้งหมดเป็น String และเตรียมเขียนลง Sheet
         data_to_write = [df.columns.tolist()] + df.astype(str).values.tolist()
         sheet.update(data_to_write)
         return True
